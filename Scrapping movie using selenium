@@ -1,0 +1,69 @@
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from time import sleep
+
+website = 'https://www.rottentomatoes.com'
+path = "/Users/apple/Downloads/chromedriver-mac-x64"
+
+# Create ChromeOptions object
+chrome_options = Options()
+
+# Set the executable path through binary_location
+chrome_options.binary_location = path
+
+# Create WebDriver instance with ChromeOptions
+driver = webdriver.Chrome(options=chrome_options)
+driver.get(website)
+
+movies_list = ["War","Super 30","Mohenjo Daro"]
+movie_names =[]
+audience_counts = []
+audience_scores = []
+tomatometers =[]
+movie_infos = []
+
+for subject in movies_list:
+    search_path = f"//a[contains(text(),'{subject}')]"
+
+    search_box = driver.find_element(By.XPATH, "//input[@class='search-text']")
+    search_box.clear()
+    search_box.send_keys(subject)
+    search_box.send_keys(Keys.ENTER)
+    sleep(5)
+
+    # Introduce a wait for the movies tab to be clickable
+    movies_tab_locator = (By.XPATH, "//*[@id='search-results']/nav/ul/li[3]/span")
+    movies_tab = WebDriverWait(driver, 10).until(EC.element_to_be_clickable(movies_tab_locator))
+    movies_tab.click()
+
+    # Use WebDriverWait to wait for the element to be clickable
+    my_movies_locator = (By.XPATH, search_path)
+    my_movies = WebDriverWait(driver, 10).until(EC.element_to_be_clickable(my_movies_locator))
+
+    if my_movies:
+        movie_names.append(my_movies.text)
+        my_movies.click()
+        sleep(3)
+
+        audience_count = driver.find_element(By.XPATH, "//a[@slot='audience-count']").text
+        audience_counts.append(audience_count)
+        
+        audience_element = driver.find_element(By.XPATH,"//score-board-deprecated")
+        audience_score =  audience_element.get_attribute('audiencescore')
+        audience_scores.append(audience_score if audience_score else "N/A")
+
+        tomatometer_element = driver.find_element(By.XPATH, "//score-board-deprecated")
+        tomatometer_score = tomatometer_element.get_attribute('tomatometerscore')
+        tomatometers.append(tomatometer_score if tomatometer_score else "N/A")
+
+        movie_info = driver.find_element(By.XPATH, "//ul[@id='info']").text.split('\n')
+        movie_infos.append(movie_info)
+
+        print(subject, "successful")
+        sleep(3)
+    else:
+        print("not successful")
