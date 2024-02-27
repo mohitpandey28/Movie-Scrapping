@@ -67,6 +67,7 @@ tomatometers =[]
 movie_infos = []
 
 for subject in movies_list:
+
     search_path = f"//a[contains(text(),'{subject}')]"
 
     search_box = driver.find_element(By.XPATH, "//input[@class='search-text']")
